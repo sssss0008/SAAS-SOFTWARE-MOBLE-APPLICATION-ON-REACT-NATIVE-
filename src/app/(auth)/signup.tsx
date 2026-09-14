@@ -1,121 +1,192 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 export default function SignupScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isNameFocused, setNameFocused] = useState(false);
+  const [isEmailFocused, setEmailFocused] = useState(false);
+  const [isPasswordFocused, setPasswordFocused] = useState(false);
 
   const handleSignup = () => {
-    // Implement SaaS registration logic here
     router.replace('/(tabs)/');
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join our SaaS Platform</Text>
+    <View style={styles.container}>
+      <LinearGradient colors={['#1e3c72', '#2a5298']} style={StyleSheet.absoluteFillObject} />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-        />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.content}>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email address"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <Animated.View entering={FadeInUp.delay(200).duration(800).springify()} style={styles.headerContainer}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Start managing your SaaS effectively</Text>
+        </Animated.View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <Animated.View entering={FadeInDown.delay(400).duration(800).springify()} style={styles.formContainer}>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
+          <View style={[styles.inputContainer, isNameFocused && styles.inputContainerFocused]}>
+            <Ionicons name="person-outline" size={20} color={isNameFocused ? '#2a5298' : '#94a3b8'} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor="#94a3b8"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => setNameFocused(false)}
+            />
+          </View>
 
-        <TouchableOpacity onPress={() => router.back()} style={styles.linkContainer}>
-          <Text style={styles.linkText}>Already have an account? Log in</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <View style={[styles.inputContainer, isEmailFocused && styles.inputContainerFocused]}>
+            <Ionicons name="mail-outline" size={20} color={isEmailFocused ? '#2a5298' : '#94a3b8'} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Email address"
+              placeholderTextColor="#94a3b8"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
+            />
+          </View>
+
+          <View style={[styles.inputContainer, isPasswordFocused && styles.inputContainerFocused]}>
+            <Ionicons name="lock-closed-outline" size={20} color={isPasswordFocused ? '#2a5298' : '#94a3b8'} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#94a3b8"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
+            />
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleSignup} activeOpacity={0.9}>
+            <LinearGradient colors={['#1e3c72', '#2a5298']} start={{x: 0, y: 0}} end={{x: 1, y: 0}} style={styles.buttonGradient}>
+              <Text style={styles.buttonText}>Sign Up</Text>
+              <Ionicons name="arrow-forward" size={20} color="#ffffff" style={styles.buttonIcon} />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.back()} style={styles.linkContainer} activeOpacity={0.7}>
+            <Text style={styles.linkText}>Already have an account? <Text style={styles.linkTextBold}>Log in</Text></Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+  },
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  formContainer: {
-    width: '85%',
-    backgroundColor: '#ffffff',
     padding: 24,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: 0.5,
     marginBottom: 8,
-    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
-    marginBottom: 32,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
-  input: {
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-    padding: 16,
+  formContainer: {
+    width: width - 48,
+    backgroundColor: '#ffffff',
+    padding: 24,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
     marginBottom: 16,
+    paddingHorizontal: 16,
+    height: 56,
+  },
+  inputContainerFocused: {
+    borderColor: '#2a5298',
+    backgroundColor: '#ffffff',
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
     fontSize: 16,
-    color: '#334155',
+    color: '#0f172a',
+    height: '100%',
   },
   button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
     marginTop: 8,
+    shadowColor: '#2a5298',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonGradient: {
+    height: 56,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  buttonIcon: {
+    marginLeft: 8,
   },
   linkContainer: {
-    marginTop: 20,
+    marginTop: 24,
     alignItems: 'center',
   },
   linkText: {
-    color: '#3b82f6',
-    fontSize: 14,
-    fontWeight: '500',
+    color: '#64748b',
+    fontSize: 15,
+  },
+  linkTextBold: {
+    color: '#2a5298',
+    fontWeight: '700',
   }
 });

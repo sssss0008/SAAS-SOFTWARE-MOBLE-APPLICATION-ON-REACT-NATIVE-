@@ -1,48 +1,87 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function DashboardScreen() {
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Welcome back, Admin</Text>
-        <Text style={styles.subtitle}>Here is your SaaS overview</Text>
-      </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+        <Text style={styles.greeting}>Good morning, Admin 👋</Text>
+        <Text style={styles.subtitle}>Here is what's happening with your projects today</Text>
+      </Animated.View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statTitle}>Total Users</Text>
+      <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.statsContainer}>
+        <LinearGradient colors={['#1e3c72', '#2a5298']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.mainStatCard}>
+          <View style={styles.mainStatHeader}>
+            <Text style={styles.mainStatTitle}>Monthly Revenue</Text>
+            <View style={styles.trendBadge}>
+              <Ionicons name="trending-up" size={14} color="#10b981" />
+              <Text style={styles.trendText}>+12.5%</Text>
+            </View>
+          </View>
+          <Text style={styles.mainStatValue}>$24,500.00</Text>
+        </LinearGradient>
+      </Animated.View>
+
+      <View style={styles.gridContainer}>
+        <Animated.View entering={FadeInRight.delay(300).springify()} style={styles.statCard}>
+          <View style={[styles.iconBox, { backgroundColor: '#e0e7ff' }]}>
+            <Ionicons name="people" size={20} color="#4f46e5" />
+          </View>
           <Text style={styles.statValue}>1,284</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statTitle}>Active Subs</Text>
+          <Text style={styles.statTitle}>Total Users</Text>
+        </Animated.View>
+
+        <Animated.View entering={FadeInRight.delay(400).springify()} style={styles.statCard}>
+          <View style={[styles.iconBox, { backgroundColor: '#dcfce7' }]}>
+            <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
+          </View>
           <Text style={styles.statValue}>842</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statTitle}>Monthly MRR</Text>
-          <Text style={styles.statValue}>$12.4k</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statTitle}>Growth</Text>
-          <Text style={styles.statValue}>+14%</Text>
-        </View>
+          <Text style={styles.statTitle}>Active Subs</Text>
+        </Animated.View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <View style={styles.activityItem}>
-          <Text style={styles.activityText}>New user signup: john.doe@example.com</Text>
-          <Text style={styles.activityTime}>2 mins ago</Text>
+      <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={styles.seeAll}>See All</Text>
         </View>
+
         <View style={styles.activityItem}>
-          <Text style={styles.activityText}>Subscription upgraded: TechCorp Inc.</Text>
-          <Text style={styles.activityTime}>1 hour ago</Text>
+          <View style={[styles.activityIconBox, { backgroundColor: '#e0f2fe' }]}>
+            <Ionicons name="person-add" size={18} color="#0284c7" />
+          </View>
+          <View style={styles.activityContent}>
+            <Text style={styles.activityTitle}>New user signup</Text>
+            <Text style={styles.activityDesc}>sarah.j@example.com joined</Text>
+          </View>
+          <Text style={styles.activityTime}>2m</Text>
         </View>
+
         <View style={styles.activityItem}>
-          <Text style={styles.activityText}>Payment received: $49.00</Text>
-          <Text style={styles.activityTime}>3 hours ago</Text>
+          <View style={[styles.activityIconBox, { backgroundColor: '#fef3c7' }]}>
+            <Ionicons name="star" size={18} color="#d97706" />
+          </View>
+          <View style={styles.activityContent}>
+            <Text style={styles.activityTitle}>Subscription upgraded</Text>
+            <Text style={styles.activityDesc}>TechCorp Inc. moved to Pro</Text>
+          </View>
+          <Text style={styles.activityTime}>1h</Text>
         </View>
-      </View>
+
+        <View style={[styles.activityItem, { borderBottomWidth: 0 }]}>
+          <View style={[styles.activityIconBox, { backgroundColor: '#dcfce7' }]}>
+            <Ionicons name="card" size={18} color="#16a34a" />
+          </View>
+          <View style={styles.activityContent}>
+            <Text style={styles.activityTitle}>Payment received</Text>
+            <Text style={styles.activityDesc}>$49.00 from Marketing LLC</Text>
+          </View>
+          <Text style={styles.activityTime}>3h</Text>
+        </View>
+      </Animated.View>
     </ScrollView>
   );
 }
@@ -52,72 +91,164 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  content: {
+    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
+  },
   header: {
-    padding: 24,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   greeting: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#0f172a',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748b',
-    marginTop: 4,
+    marginTop: 6,
+    lineHeight: 22,
   },
   statsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  mainStatCard: {
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#1e3c72',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  mainStatHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  mainStatTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  trendBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  trendText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#10b981',
+    marginLeft: 4,
+  },
+  mainStatValue: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: -1,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
     gap: 16,
+    marginBottom: 24,
   },
   statCard: {
+    flex: 1,
     backgroundColor: '#ffffff',
-    width: '46%',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 2,
   },
-  statTitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginBottom: 8,
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0f172a',
+    marginBottom: 4,
+  },
+  statTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748b',
   },
   section: {
-    padding: 24,
+    marginHorizontal: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0f172a',
-    marginBottom: 16,
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2a5298',
   },
   activityItem: {
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
-  activityText: {
-    fontSize: 14,
-    color: '#334155',
-    fontWeight: '500',
+  activityIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  activityContent: {
+    flex: 1,
+  },
+  activityTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  activityDesc: {
+    fontSize: 13,
+    color: '#64748b',
   },
   activityTime: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#94a3b8',
-    marginTop: 4,
+    fontWeight: '500',
   }
 });
