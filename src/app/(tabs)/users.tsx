@@ -4,6 +4,7 @@ import Animated, { FadeInDown, Layout, useAnimatedStyle, useSharedValue, withSpr
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Swipeable } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -162,7 +163,14 @@ const SpeedDialFAB = () => {
 
       <Animated.View style={[styles.dialActionContainer, action1Style]}>
         <Text style={styles.dialLabel}>Invite User</Text>
-        <TouchableOpacity style={[styles.dialActionBtn, { backgroundColor: '#8b5cf6' }]} activeOpacity={0.8} onPress={toggle}>
+        <TouchableOpacity
+          style={[styles.dialActionBtn, { backgroundColor: '#8b5cf6' }]}
+          activeOpacity={0.8}
+          onPress={() => {
+            toggle();
+            router.push('/(modals)/invite');
+          }}
+        >
           <Ionicons name="person-add-outline" size={22} color="#fff" />
         </TouchableOpacity>
       </Animated.View>
