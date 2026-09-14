@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Linking } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -75,6 +75,13 @@ export default function SettingsScreen() {
 
       <Animated.Text entering={FadeInDown.delay(700).springify()} style={styles.versionText}>
         App Version 1.0.0
+      </Animated.Text>
+
+      <Animated.Text entering={FadeInDown.delay(750).springify()} style={styles.developerText}>
+        DEVELOPED BY{' '}
+        <Text style={styles.developerLink} onPress={() => Linking.openURL('https://www.linkedin.com/in/awiskaracharya/')}>
+          AWISKAR ACHARYA
+        </Text>
       </Animated.Text>
     </ScrollView>
   );
@@ -220,5 +227,15 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     marginTop: 24,
     fontWeight: '500',
+  },
+  developerText: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 8,
+    fontWeight: '600',
+  },
+  developerLink: {
+    color: '#2a5298',
   }
 });
