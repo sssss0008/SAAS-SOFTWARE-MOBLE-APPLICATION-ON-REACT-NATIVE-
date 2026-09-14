@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Dimensi
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
+import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -43,23 +44,40 @@ export default function AnalyticsScreen() {
           ))}
         </Animated.View>
 
-        {/* Main Chart Placeholder (Simulated) */}
+        {/* Animated Line Chart */}
         <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.chartCard}>
           <Text style={styles.chartTitle}>Revenue Growth</Text>
           <Text style={styles.chartSubtitle}>vs previous {activePeriod.toLowerCase()}</Text>
 
-          <View style={styles.chartPlaceholder}>
-            {/* Mock bars for the chart */}
-            {[40, 60, 45, 80, 50, 90, 75].map((h, i) => (
-              <View key={i} style={styles.barColumn}>
-                <LinearGradient
-                  colors={['#1e3c72', '#2a5298']}
-                  style={[styles.bar, { height: `${h}%` }]}
-                  start={{x: 0, y: 0}} end={{x: 0, y: 1}}
-                />
-                <Text style={styles.barLabel}>{['M','T','W','T','F','S','S'][i]}</Text>
-              </View>
-            ))}
+          <View style={styles.chartContainer}>
+            <Svg width="100%" height="180" viewBox="0 0 300 180" style={styles.svgChart}>
+              <Defs>
+                <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#3b82f6" stopOpacity="0.3" />
+                  <Stop offset="1" stopColor="#3b82f6" stopOpacity="0.0" />
+                </LinearGradient>
+              </Defs>
+              <Path
+                d="M 0 150 C 50 150, 60 80, 100 90 C 140 100, 150 40, 200 50 C 250 60, 280 20, 300 10 L 300 180 L 0 180 Z"
+                fill="url(#grad)"
+              />
+              <Path
+                d="M 0 150 C 50 150, 60 80, 100 90 C 140 100, 150 40, 200 50 C 250 60, 280 20, 300 10"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <View style={styles.chartPoint1} />
+              <View style={styles.chartPoint2} />
+              <View style={styles.chartPoint3} />
+            </Svg>
+
+            <View style={styles.chartLabels}>
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                <Text key={i} style={styles.chartLabelText}>{day}</Text>
+              ))}
+            </View>
           </View>
         </Animated.View>
 
@@ -152,31 +170,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 24,
   },
-  chartPlaceholder: {
+  chartContainer: {
     height: 180,
+    marginTop: 16,
+    marginHorizontal: -12,
+  },
+  svgChart: {
+    flex: 1,
+  },
+  chartLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    paddingBottom: 8,
+    paddingHorizontal: 24,
+    marginTop: 8,
   },
-  barColumn: {
-    alignItems: 'center',
-    height: '100%',
-    justifyContent: 'flex-end',
-    width: (width - 120) / 7,
-  },
-  bar: {
-    width: 12,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  barLabel: {
+  chartLabelText: {
     fontSize: 12,
     color: '#94a3b8',
     fontWeight: '600',
   },
+  chartPoint1: { position: 'absolute', width: 8, height: 8, borderRadius: 4, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#3b82f6', left: 96, top: 86 },
+  chartPoint2: { position: 'absolute', width: 8, height: 8, borderRadius: 4, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#3b82f6', left: 196, top: 46 },
+  chartPoint3: { position: 'absolute', width: 8, height: 8, borderRadius: 4, backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#3b82f6', left: 296, top: 6 },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',

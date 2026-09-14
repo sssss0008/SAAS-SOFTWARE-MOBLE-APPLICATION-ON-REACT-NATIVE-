@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, Dimensions, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight, useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, useSharedValue, useAnimatedStyle, withTiming, withDelay, useAnimatedScrollHandler, interpolate } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path } from 'react-native-svg';
@@ -11,6 +11,23 @@ const CHART_DATA = [40, 65, 45, 80, 55, 95, 75];
 
 export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const parallaxStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, 200], [-50, 0, 100], 'clamp'),
+        },
+      ],
+    };
+  });
 
   const onRefresh = React.useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -42,18 +59,22 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <Svg height="300" width={width} style={StyleSheet.absoluteFillObject}>
-        <LinearGradient colors={['#e0e7ff', '#f8fafc']} style={StyleSheet.absoluteFillObject} />
-        <Path
-          d={`M0 0 L${width} 0 L${width} 200 Q${width/2} 300 0 150 Z`}
-          fill="#f1f5f9"
-          opacity="0.6"
-        />
-      </Svg>
+      <Animated.View style={[StyleSheet.absoluteFillObject, parallaxStyle]}>
+        <Svg height="300" width={width} style={StyleSheet.absoluteFillObject}>
+          <LinearGradient colors={['#e0e7ff', '#f8fafc']} style={StyleSheet.absoluteFillObject} />
+          <Path
+            d={`M0 0 L${width} 0 L${width} 200 Q${width/2} 300 0 150 Z`}
+            fill="#f1f5f9"
+            opacity="0.6"
+          />
+        </Svg>
+      </Animated.View>
 
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2a5298" />}
       >
         <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
@@ -137,7 +158,7 @@ export default function DashboardScreen() {
             <Text style={styles.activityTime}>3h</Text>
           </View>
         </Animated.View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }

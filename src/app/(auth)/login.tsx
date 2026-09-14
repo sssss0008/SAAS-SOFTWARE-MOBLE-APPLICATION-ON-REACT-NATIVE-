@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-
 import * as Haptics from 'expo-haptics';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 const { width } = Dimensions.get('window');
 
@@ -14,10 +14,46 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isEmailFocused, setEmailFocused] = useState(false);
   const [isPasswordFocused, setPasswordFocused] = useState(false);
+  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [biometricType, setBiometricType] = useState<number>(0);
+
+  useEffect(() => {
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      setIsBiometricSupported(compatible);
+      if (compatible) {
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        if (enrolled) {
+          const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+          if (types.length > 0) {
+            setBiometricType(types[0]); // 1 = Fingerprint, 2 = FacialRecognition
+          }
+        }
+      }
+    })();
+  }, []);
 
   const handleLogin = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace('/(tabs)/');
+  };
+
+  const handleBiometricAuth = async () => {
+    try {
+      const biometricAuth = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Authenticate with Biometrics',
+        disableDeviceFallback: false,
+        cancelLabel: 'Cancel',
+      });
+      if (biometricAuth.success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace('/(tabs)/');
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -74,6 +110,21 @@ export default function LoginScreen() {
               <Ionicons name="arrow-forward" size={20} color="#ffffff" style={styles.buttonIcon} />
             </LinearGradient>
           </TouchableOpacity>
+
+          {isBiometricSupported && (
+            <Animated.View entering={FadeInDown.delay(600).springify()}>
+              <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricAuth} activeOpacity={0.8}>
+                <Ionicons
+                  name={biometricType === 2 ? "scan-outline" : "finger-print-outline"}
+                  size={24}
+                  color="#2a5298"
+                />
+                <Text style={styles.biometricText}>
+                  Login with {biometricType === 2 ? 'Face ID' : 'Fingerprint'}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
 
           <TouchableOpacity onPress={() => router.push('/(auth)/signup')} style={styles.linkContainer} activeOpacity={0.7}>
             <Text style={styles.linkText}>Don't have an account? <Text style={styles.linkTextBold}>Sign up</Text></Text>
@@ -188,6 +239,23 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginLeft: 8,
+  },
+  biometricButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  biometricText: {
+    marginLeft: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#334155',
   },
   linkContainer: {
     marginTop: 24,
