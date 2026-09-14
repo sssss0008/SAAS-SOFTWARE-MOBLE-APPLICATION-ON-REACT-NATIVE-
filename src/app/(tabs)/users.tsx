@@ -1,24 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Platform } from 'react-native';
-import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
+import Animated, { FadeInDown, Layout, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 const DUMMY_USERS = [
-  { id: '1', name: 'Alice Smith', email: 'alice@example.com', role: 'Admin', status: 'Active', color: '#8b5cf6' },
-  { id: '2', name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Active', color: '#ec4899' },
-  { id: '3', name: 'Charlie Davis', email: 'charlie@example.com', role: 'User', status: 'Inactive', color: '#14b8a6' },
-  { id: '4', name: 'Diana Miller', email: 'diana@example.com', role: 'Manager', status: 'Active', color: '#f59e0b' },
-  { id: '5', name: 'Evan Wright', email: 'evan@example.com', role: 'User', status: 'Suspended', color: '#3b82f6' },
+  { id: '1', name: 'Alice Smith', email: 'alice@example.com', role: 'Admin', status: 'Active', color: '#8b5cf6', lastLogin: '2 mins ago', phone: '+1 234 567 890' },
+  { id: '2', name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Active', color: '#ec4899', lastLogin: '1 hour ago', phone: '+1 234 567 891' },
+  { id: '3', name: 'Charlie Davis', email: 'charlie@example.com', role: 'User', status: 'Inactive', color: '#14b8a6', lastLogin: '3 days ago', phone: '+1 234 567 892' },
+  { id: '4', name: 'Diana Miller', email: 'diana@example.com', role: 'Manager', status: 'Active', color: '#f59e0b', lastLogin: 'Just now', phone: '+1 234 567 893' },
+  { id: '5', name: 'Evan Wright', email: 'evan@example.com', role: 'User', status: 'Suspended', color: '#3b82f6', lastLogin: '1 week ago', phone: '+1 234 567 894' },
 ];
 
-export default function UsersScreen() {
-  const [search, setSearch] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+const UserCard = ({ item, index }: { item: typeof DUMMY_USERS[0], index: number }) => {
+  const [expanded, setExpanded] = useState(false);
+  const height = useSharedValue(0);
 
-  const filteredUsers = DUMMY_USERS.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const toggleExpand = () => {
+    Haptics.selectionAsync();
+    setExpanded(!expanded);
+    height.value = withSpring(expanded ? 0 : 80, { damping: 15 });
+  };
+
+  const expandStyle = useAnimatedStyle(() => ({
+    height: height.value,
+    opacity: height.value / 80,
+    overflow: 'hidden'
+  }));
 
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -29,30 +37,67 @@ export default function UsersScreen() {
     }
   };
 
-  const renderItem = ({ item, index }: { item: typeof DUMMY_USERS[0], index: number }) => (
+  return (
     <Animated.View
       entering={FadeInDown.delay(index * 100).springify()}
       layout={Layout.springify()}
     >
-      <TouchableOpacity style={styles.userCard} activeOpacity={0.7}>
-        <View style={styles.userInfo}>
-          <View style={[styles.avatar, { backgroundColor: item.color + '20' }]}>
-            <Text style={[styles.avatarText, { color: item.color }]}>{item.name.charAt(0)}</Text>
+      <TouchableOpacity style={styles.userCard} activeOpacity={0.7} onPress={toggleExpand}>
+        <View style={styles.cardHeader}>
+          <View style={styles.userInfo}>
+            <View style={[styles.avatar, { backgroundColor: item.color + '20' }]}>
+              <Text style={[styles.avatarText, { color: item.color }]}>{item.name.charAt(0)}</Text>
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.email}>{item.email}</Text>
+            </View>
           </View>
-          <View style={styles.details}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.email}>{item.email}</Text>
+          <View style={styles.metaInfo}>
+            <Text style={styles.role}>{item.role}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+              <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+              <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+            </View>
           </View>
         </View>
-        <View style={styles.metaInfo}>
-          <Text style={styles.role}>{item.role}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
-            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
-            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+
+        <Animated.View style={expandStyle}>
+          <View style={styles.expandedContent}>
+            <View style={styles.expandedRow}>
+              <Ionicons name="call-outline" size={16} color="#64748b" />
+              <Text style={styles.expandedText}>{item.phone}</Text>
+            </View>
+            <View style={styles.expandedRow}>
+              <Ionicons name="time-outline" size={16} color="#64748b" />
+              <Text style={styles.expandedText}>Last login: {item.lastLogin}</Text>
+            </View>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.actionBtn}>
+                <Text style={styles.actionBtnText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]}>
+                <Text style={styles.actionBtnTextDanger}>Suspend</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </Animated.View>
       </TouchableOpacity>
     </Animated.View>
+  );
+};
+
+export default function UsersScreen() {
+  const [search, setSearch] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+
+  const filteredUsers = DUMMY_USERS.filter(u =>
+    u.name.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const renderItem = ({ item, index }: { item: typeof DUMMY_USERS[0], index: number }) => (
+    <UserCard item={item} index={index} />
   );
 
   return (
@@ -141,14 +186,57 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
     shadowRadius: 12,
     elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  expandedContent: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  expandedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  expandedText: {
+    fontSize: 14,
+    color: '#64748b',
+    marginLeft: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    gap: 8,
+  },
+  actionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+  },
+  actionBtnDanger: {
+    backgroundColor: '#fef2f2',
+  },
+  actionBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  actionBtnTextDanger: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ef4444',
   },
   userInfo: {
     flexDirection: 'row',

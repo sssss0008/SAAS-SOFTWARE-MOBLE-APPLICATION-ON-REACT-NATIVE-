@@ -1,10 +1,34 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+
+const { width } = Dimensions.get('window');
+const CHART_DATA = [40, 65, 45, 80, 55, 95, 75];
 
 export default function DashboardScreen() {
+
+  const AnimatedBar = ({ value, index }: { value: number, index: number }) => {
+    const height = useSharedValue(0);
+
+    useEffect(() => {
+      height.value = withDelay(500 + (index * 100), withTiming(value, { duration: 800 }));
+    }, []);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      height: `${height.value}%`,
+      opacity: height.value / 100 + 0.3
+    }));
+
+    return (
+      <View style={styles.chartBarContainer}>
+        <Animated.View style={[styles.chartBar, animatedStyle]} />
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
@@ -22,6 +46,12 @@ export default function DashboardScreen() {
             </View>
           </View>
           <Text style={styles.mainStatValue}>$24,500.00</Text>
+
+          <View style={styles.chartContainer}>
+            {CHART_DATA.map((val, i) => (
+              <AnimatedBar key={i} value={val} index={i} />
+            ))}
+          </View>
         </LinearGradient>
       </Animated.View>
 
@@ -154,6 +184,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#ffffff',
     letterSpacing: -1,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    height: 80,
+    marginTop: 24,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: 10,
+  },
+  chartBarContainer: {
+    width: (width - 120) / 7,
+    height: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  chartBar: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 4,
   },
   gridContainer: {
     flexDirection: 'row',

@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
+import * as Haptics from 'expo-haptics';
+
 const { width } = Dimensions.get('window');
 
 export default function SignupScreen() {
@@ -16,6 +18,7 @@ export default function SignupScreen() {
   const [isPasswordFocused, setPasswordFocused] = useState(false);
 
   const handleSignup = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace('/(tabs)/');
   };
 
